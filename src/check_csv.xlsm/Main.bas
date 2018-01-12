@@ -6,7 +6,7 @@ Public Const TABLE_DEFINITE_TEMPLATE = "ÅyÉJÉâÉÄíËã`ÅzÉeÉìÉvÉåÅ[Ég"
 'Range
 Public Const DATA_CHECK_RANGE = "C6:M"
 Public Const FILE_RULE_NAME_RANGE = "D5:D28"
-Public Const DEFINITE_TABLE_FIRST_COL = 22
+Public Const DEFINITE_TABLE_FIRST_COL = 21
 'Column Name "bÅ®dashéñëOÉfÅ[É^É`ÉFÉbÉNÉcÅ[ÉãÅiVer0.10Åj"
 Public Const COL_DATA_CHECK_CHECK_BOX = "B"
 Public Const COL_DATA_CHECK_NO = "C"
@@ -60,15 +60,16 @@ Public Const ERROR_OVER_RECORD = "%{fileName}ÅFÉtÉ@ÉCÉãÇÃç≈ëÂÉåÉRÅ[ÉhÇí¥Ç¶ÇƒÇ¢Ç
 Public Const CHECK_EXISTS_SHEET = "äYìñÉJÉâÉÄíËã`ÉVÅ[ÉgÇÕä˘Ç…ë∂ç›ÇµÇƒÇ¢Ç‹Ç∑ÅB"
 Public Const ERROR_NOT_EXISTS_SHEET = "%{fileName}ÇÃÉJÉâÉÄíËã`ÉVÅ[ÉgÇÕë∂ç›ÇµÇƒÇ¢Ç‹ÇπÇÒÅB" & vbNewLine & "É`ÉFÉbÉNÇµÇΩçsÇÕÅuçÏê¨ÅvÉ{É^ÉìÇÉNÉäÉbÉNÇµÅAÉJÉâÉÄíËã`ÉVÅ[ÉgÇçÏê¨ÇµÇƒÇ≠ÇæÇ≥Ç¢ÅB"
 Public Const ERROR_COLUMN_NOT_NULL = "%{fileName}ÅFçs%{row}Ç…%{column}ÉJÉâÉÄÇ…ÉfÅ[É^Çê›íËÇµÇƒÇ≠ÇæÇ≥Ç¢ÅB"
+'huynnp
+'<ÉtÉ@ÉCÉãäTóv>ÅFçs{ÉfÅ[É^Ç™èdï°Ç≥ÇÍÇΩçsêî}Ç…{ÉJÉâÉÄóùò_ñº}ÉJÉâÉÄÇ…ÇÕèdï°ÉfÅ[É^Ç™Ç†ÇËÇ‹Ç∑ÅB
 Public Const ERROR_COLUMN_PRIMARY_KEY = "%{fileName}ÅFçs%{row}Ç…%{column}ÉJÉâÉÄÇ…ÇÕèdï°ÉfÅ[É^Ç™Ç†ÇËÇ‹Ç∑ÅB"
 Public Const ERROR_COLUMN_DATE_FORMAT = "%{fileName}ÅFçs%{row}Ç…%{column}ÉJÉâÉÄÇÃílÇÃÉtÉHÅ[É}ÉbÉgÇÕíËã`Ç∆àÍívÇµÇƒÇ¢Ç‹ÇπÇÒÅB"
 Public Const ERROR_DOUBLE_QUOTE = "%{fileName}ÅFçs%{row}Ç…ÅAÉJÉâÉÄì¸óÕãKë•Ç∆àŸÇ»ÇÈÉJÉâÉÄÇ™ë∂ç›ÇµÇ‹Ç∑ÅB"
+Public Const ERROR_DUPLICATE_NAME_PATTERN = "%{namePattern}Ç™ï°êîë∂ç›ÇµÇ‹Ç∑ÅBÉtÉ@ÉCÉãñΩñºãKë•ÇÕàÍà”Ç…Ç»ÇÈÇÊÇ§Ç…ê›íËÇµÇƒÇ≠ÇæÇ≥Ç¢ÅB"
 Public Const STATUS_PROCESSING = "é¿é{íÜ"
 Public Const STATUS_PROCESS_COMPLETED = "É`ÉFÉbÉNäÆóπ"
-'"äÆóπÅiê≥èÌÅj"
-Public Const STATUS_PROCESS_COMPLETED_OK = STATUS_PROCESS_COMPLETED
-'"äÆóπÅiàŸèÌÇ†ÇËÅj"
-Public Const STATUS_PROCESS_COMPLETED_NOK = STATUS_PROCESS_COMPLETED
+Public Const STATUS_PROCESS_COMPLETED_OK = "äÆóπÅiê≥èÌÅj"
+Public Const STATUS_PROCESS_COMPLETED_NOK = "äÆóπÅiàŸèÌÇ†ÇËÅj"
 Public Const STATUS_PROCESS_INIT_FILE = "ñ¢é¿é{"
 Public Const STATUS_PROCESS_STOP = "íÜíf"
 
@@ -76,6 +77,7 @@ Public Const STATUS_PROCESS_STOP = "íÜíf"
 Public dateColumns As Scripting.Dictionary
 Public parseErrorRows As Scripting.Dictionary
 Public currentCheckingRow As Integer
+Public isNormal As Boolean
 'Checkbox check all handle
 Sub chkAll_Click()
     Dim CB As CheckBox
@@ -126,8 +128,7 @@ Sub btnProcess_Click()
     Set parseErrorRows = New Scripting.Dictionary
 
     If checkboxValid Then
-        'Loop all checkbox
-        
+        'Loop all checkbox to check file, if has error to call MessageBOX
         For Each CB In ActiveSheet.CheckBoxes
             If CB.Name <> ActiveSheet.CheckBoxes("chkAll").Name And CB.value = 1 Then
                 'Row number processing
@@ -143,7 +144,7 @@ Sub btnProcess_Click()
                 'Get file path from list
                 filePath = Common.dataCheckSheet.Range(COL_DATA_CHECK_FILE_PATH & rowNum).value
                 filePath = Trim(CStr(filePath))
-                
+
                 'Validate file not select
                 If IsEmpty(filePath) Or filePath = "" Or filePath = NOTIFICATE_NOT_SELECT_FILE Then
                     fileEmptyValid = False
@@ -160,7 +161,7 @@ Sub btnProcess_Click()
                 currentCheckingRow = currentCheckingRow + 1
             End If
        Next CB
-       
+
        '2 Validate Duplicate file name
        Dim fileRule As Worksheet
        Set fileRule = Common.fileListSheet()
@@ -171,36 +172,37 @@ Sub btnProcess_Click()
             Exit Sub
         End If
        Next E
-       
+
        If fileEmptyValid = False Then
             MsgBox FILE_NOT_SELECT_MSG
        ElseIf fileExistsValid = False Then
             MsgBox Replace(fileNotExistsList, vbCrLf, "", 1, 1)
        End If
     End If
-    
+
     'Validate file content
     If checkboxValid And fileEmptyValid And fileExistsValid Then
-        
+
         For Each CB In ActiveSheet.CheckBoxes
             Set dateColumns = New Scripting.Dictionary
+            isNormal = True
            If CB.Name <> ActiveSheet.CheckBoxes("chkAll").Name And CB.value = 1 Then
                'Row number processing
                 rowNum = Split(CB.Name, " ")(1)
                 currentCheckingRow = rowNum
                 Call updateStatusProcess(rowNum, STATUS_PROCESSING)
-               
+
                'Get file path from list
                 Dim dataCheck As Worksheet
                 Set dataCheck = Common.dataCheckSheet()
-                
+
                 filePath = dataCheck.Range(COL_DATA_CHECK_FILE_PATH & rowNum).value
                 filePath = Trim(CStr(filePath))
                 fileOverView = dataCheck.Range(COL_DATA_CHECK_FILE_NAME & rowNum).value
-                
+
                 Dim fileList As Worksheet
                 Set fileList = Common.fileListSheet()
-                              
+
                 fileRowIndex = dataCheck.Range(COL_DATA_CHECK_SAVE & rowNum).value
                 limitSize = fileList.Range(COL_FILE_LIST_MAX_FILE_SIZE & fileRowIndex).value
                 fileNameRule = fileList.Range(COL_FILE_LIST_NAME_PATTERN & fileRowIndex).value
@@ -225,17 +227,17 @@ Sub btnProcess_Click()
                 Dim sheetOfDefiniteTable As Worksheet
                 Set sheetOfDefiniteTable = Common.definiteSheet(nameSheeetDefiniteTable)
                 lastRow = lastHasData(1, nameSheeetDefiniteTable, "D22:D500")
-                quantityColumnTable = lastRow - DEFINITE_TABLE_FIRST_COL + 1
+                quantityColumnTable = lastRow - DEFINITE_TABLE_FIRST_COL
                 If quantityColumnTable < 0 Then
                     MsgBox Replace(ERROR_NOT_DATA_DEFINITE_TABLE, "%{fileName}", fileOverView)
                     GoTo NextIterationCB
                 End If
-                
+
                 Dim lstColumnNotNull
                 Dim lstColPrimaryKey
                 lstColumnNotNull = ""
                 lstColPrimaryKey = ""
-                For i = DEFINITE_TABLE_FIRST_COL To lastRow Step 1
+                For i = (DEFINITE_TABLE_FIRST_COL + 1) To lastRow Step 1
                     no = sheetOfDefiniteTable.Range(COL_DEFINITE_TABLE_No & i).value
                     typeDefinite = sheetOfDefiniteTable.Range(COL_DEFINITE_TABLE_DATA_TYPE & i).value
                     isPrimaryKey = sheetOfDefiniteTable.Range(COL_DEFINITE_TABLE_PRIMARY_KEY & i).value
@@ -254,31 +256,32 @@ Sub btnProcess_Click()
                 Next
                 lstColPrimaryKey = Split(Trim(lstColPrimaryKey), " ")
                 lstColumnNotNull = Split(Trim(lstColumnNotNull), " ")
-                
+
                 'Validate Bom
                 'IsValidateBom = validateBom(detectBOM(filePath), fileOverView)
                 If detectBOM(filePath) = True Then
+                    isNormal = False
                     Log.ERROR (Replace(ERROR_BOM, "%{fileName}", fileOverView))
                     Call updateStatusProcess(rowNum, STATUS_PROCESS_COMPLETED_NOK)
                     GoTo NextIterationCB
                 End If
-                
+
                 '3 Validate file size
-                IsValid = vaidateFileSize(filePath, limitSize, fileOverView, flagRecordSize)
-                
+                isNormal = isNormal And vaidateFileSize(filePath, limitSize, fileOverView, flagRecordSize)
+
                 '4 Validate file extension
-                IsValidExension = validateExtenstion(filePath, extensionFileList, fileOverView)
-                
+                isNormal = isNormal And validateExtenstion(filePath, extensionFileList, fileOverView)
+
                 '5 Validate newLineCharacter
-                IsValidateNewLineCharacter = validateNewLineCharacter(newLineCharacter(filePath, 0), newLineDeclare, fileOverView)
-                
+                isNormal = isNormal And validateNewLineCharacter(newLineCharacter(filePath, 0), newLineDeclare, fileOverView)
+
                 '6 Validate rule's name
                 fileNameRule = Split(fileNameRule, "<")(0)
-                IsValidateFileNameRule = validateNameRule(filePath, fileNameRule, fileOverView)
-                
+                isNormal = isNormal And validateNameRule(filePath, fileNameRule, fileOverView)
+
                 '7.1 Validate encode
-                IsValidateEncoding = validateEncoding(encoding(filePath), endcodingType, fileOverView)
-                
+                isNormal = isNormal And validateEncoding(encoding(filePath), endcodingType, fileOverView)
+
                 '8 Validate sperated character
                 newLineChar = file.newLineCharacter(filePath, 1)
                 FileType = fileList.Range(COL_FILE_LIST_FILE_TYPE & fileRowIndex)
@@ -287,17 +290,20 @@ Sub btnProcess_Click()
                 Else
                  FileType = ","
                 End If
-                
+
                 csvContent = readCSV(filePath, FileType, 1000, quantityColumnTable, fileOverView, startRowData, currentCheckingRow)
                 If IsNull(csvContent) Or IsEmpty(csvContent) Then
                     GoTo NextIterationCB
                 End If
-                
-                checkSp = checkValidateSeperatedCharacter(filePath, FileType, quantityColumnTable, fileOverView, startRowData)
-                
+
+                isNormal = isNormal And checkValidateSeperatedCharacter(filePath, FileType, quantityColumnTable, fileOverView, startRowData)
+
                 'Check Primary key
                 For Each pkey In lstColPrimaryKey
                     rowNumCSV = 1
+                    'huynnp
+                    errorRowNumCSV = ""
+                    errorColumnName = ""
                     For Each Row In csvContent
                         Count = 0
                         For Each Row2 In csvContent
@@ -306,20 +312,29 @@ Sub btnProcess_Click()
                             End If
                         Next
                         If Count > 1 Then
-                            ColumnName = sheetOfDefiniteTable.Range(COL_DEFINITE_TABLE_NAME & DEFINITE_TABLE_FIRST_COL + pkey + 1).value
-                            Log.ERROR (Replace(Replace(Replace(ERROR_COLUMN_PRIMARY_KEY, "%{fileName}", fileOverView), "%{row}", rowNumCSV), "%{column}", ColumnName))
+                            isNormal = False
+                            errorRowNumCSV = errorRowNumCSV & "ÅA" & rowNumCSV
+                            errorColumnName = sheetOfDefiniteTable.Range(COL_DEFINITE_TABLE_NAME & DEFINITE_TABLE_FIRST_COL + pkey).value
+                            'ColumnName = sheetOfDefiniteTable.Range(COL_DEFINITE_TABLE_NAME & DEFINITE_TABLE_FIRST_COL + pkey + 1).value
+                            'Log.ERROR (Replace(Replace(Replace(ERROR_COLUMN_PRIMARY_KEY, "%{fileName}", fileOverView), "%{row}", rowNumCSV), "%{column}", errorColumnName))
                         End If
                         rowNumCSV = rowNumCSV + 1
                     Next
+                    
+                    errorRowNumCSV = Replace(errorRowNumCSV, "ÅA", "", 1, 1)
+                    If IsEmpty(errorRowNumCSV) = False And Trim(errorRowNumCSV) <> "" Then
+                        Log.ERROR (Replace(Replace(Replace(ERROR_COLUMN_PRIMARY_KEY, "%{fileName}", fileOverView), "%{row}", errorRowNumCSV), "%{column}", errorColumnName))
+                    End If
                 Next pkey
-                
+
                 rowNumCSV = 1
                 For Each csvRow In csvContent
                     'Check NOT NULL
                     For Each n In lstColumnNotNull
                         n = CInt(n)
                         If csvRow(1, n) = "" Then
-                            ColumnName = sheetOfDefiniteTable.Range(COL_DEFINITE_TABLE_NAME & DEFINITE_TABLE_FIRST_COL + n + 1).value
+                            isNormal = False
+                            ColumnName = sheetOfDefiniteTable.Range(COL_DEFINITE_TABLE_NAME & DEFINITE_TABLE_FIRST_COL + n).value
                             Log.ERROR (Replace(Replace(Replace(ERROR_COLUMN_NOT_NULL, "%{fileName}", fileOverView), "%{row}", rowNumCSV), "%{column}", ColumnName))
                         End If
                     Next n
@@ -331,14 +346,16 @@ Sub btnProcess_Click()
                     For Each key In dateColumns.Keys
                         FormatString = dateColumns(key)
                         OriginalValue = csvRow(1, key)
-                        ColumnName = sheetOfDefiniteTable.Range(COL_DEFINITE_TABLE_NAME & DEFINITE_TABLE_FIRST_COL + key - 1).value
-                        
+                        ColumnName = sheetOfDefiniteTable.Range(COL_DEFINITE_TABLE_NAME & DEFINITE_TABLE_FIRST_COL + key).value
+
                         If IsDate(OriginalValue) Then
                             FormattedValue = Format(OriginalValue, FormatString)
                             If FormattedValue <> OriginalValue Then
+                                isNormal = False
                                 Log.ERROR (Replace(Replace(Replace(ERROR_COLUMN_DATE_FORMAT, "%{fileName}", fileOverView), "%{row}", rowNumCSV), "%{column}", ColumnName))
                             End If
                         Else
+                            isNormal = False
                             Log.ERROR (Replace(Replace(Replace(ERROR_COLUMN_DATE_FORMAT, "%{fileName}", fileOverView), "%{row}", rowNumCSV), "%{column}", ColumnName))
                         End If
                     Next key
@@ -351,9 +368,12 @@ Sub btnProcess_Click()
                 Next csvRow
                 '9 Validate maxRecord
                 fileRecordQuantity = getFileLine(filePath)
-                IsValidateMaxRecord = validateMaxRecord(fileRecordQuantity, maxRecordRule, fileOverView, flagRecordSize)
-                
-                Call updateStatusProcess(rowNum, STATUS_PROCESS_COMPLETED_OK)
+                isNormal = isNormal And validateMaxRecord(fileRecordQuantity, maxRecordRule, fileOverView, flagRecordSize)
+                If isNormal = True Then
+                    Call updateStatusProcess(rowNum, STATUS_PROCESS_COMPLETED_OK)
+                Else
+                    Call updateStatusProcess(rowNum, STATUS_PROCESS_COMPLETED_NOK)
+                End If
                 currentCheckingRow = currentCheckingRow + 1
            End If
 NextIterationCB:
@@ -365,7 +385,7 @@ End Sub
 Sub btnSelectFile_Click()
     Dim fd As Office.FileDialog
     Set fd = Application.FileDialog(msoFileDialogFilePicker)
-    
+
     With fd
 
     .AllowMultiSelect = False
@@ -378,7 +398,6 @@ Sub btnSelectFile_Click()
         txtFileName = .SelectedItems(1)
         Common.dataCheckSheet.Range(COL_DATA_CHECK_FILE_PATH & rowClicked).value = txtFileName
         Common.dataCheckSheet.Range(COL_DATA_CHECK_FILE_PATH & rowClicked).Font.Color = vbBlack
-        Common.dataCheckSheet.Range(COL_DATA_CHECK_STATUS_CHECK & rowClicked).value = STATUS_PROCESS_INIT_FILE
     End If
 
     End With
@@ -387,58 +406,99 @@ End Sub
 'Get conditions handle
 Sub btnGetextractionList_Click()
     mbResult = MsgBox(CLEAR_CONFIRM_MSG, vbYesNo)
-    
+
     If mbResult = vbYes Then
         clearContent
-        
+
         Dim errorRows As String
         errorRows = ""
-        
+
         lastRow = Common.lastRowFileListSheet()
         If lastRow > 104 Then
             lastRow = 104
         End If
         addIndex = 6
         errorIndex = 0
-        
+
+        Dim stringPattern As String
+        stringPattern = ""
+        Dim errorPatterns As String
+        errorPatterns = ""
+
         For i = 5 To lastRow
-            
+
             rowNum = Common.fileListSheet.Range(COL_FILE_LIST_ROW_NUM & i).value
             name_pattern = Common.fileListSheet.Range(COL_FILE_LIST_NAME_PATTERN & i).value
             fileOverView = Common.fileListSheet.Range(COL_FILE_LIST_FILE_NAME & i).value
             maxRecord = Common.fileListSheet.Range(COL_FILE_LIST_MAX_QUANTITY_RECORD & i).value
             maxFileSize = Common.fileListSheet.Range(COL_FILE_LIST_MAX_FILE_SIZE & i).value
             flagRecordSize = Common.fileListSheet.Range(COL_FILE_LIST_FLAG_RECORD_SIZE & i).value
-            
+            flagDuplicateNamePattern = False
+
             If IsEmpty(fileOverView) = False Then
                 If (IsEmpty(maxRecord) Or maxRecord = 0 Or IsEmpty(maxFileSize) Or maxFileSize = 0) Then
                     If flagRecordSize = "ëSåè" Then
                         errorRows = errorRows & " " & rowNum
                     Else
-                        Common.dataCheckSheet.Range(COL_DATA_CHECK_NO & addIndex).value = rowNum
-                        Common.dataCheckSheet.Range(COL_DATA_CHECK_FILE_NAME_PATTERN & addIndex).value = Split(name_pattern, "<")(0)
-                        Common.dataCheckSheet.Range(COL_DATA_CHECK_FILE_NAME & addIndex).value = fileOverView
-                        Common.dataCheckSheet.Range(COL_DATA_CHECK_SAVE & addIndex).value = i
+                        arrayPattern = Split(stringPattern, ";")
+                        For J = 0 To UBound(arrayPattern)
+                            If arrayPattern(J) = Split(name_pattern, "<")(0) Then
+                                errorPatterns = errorPatterns & " " & arrayPattern(J) & ":" & rowNum
+                                flagDuplicateNamePattern = True
+                                'Exit Sub
+                            End If
+                        Next J
+                        If flagDuplicateNamePattern = False Then
+                            stringPattern = stringPattern & ";" & Split(name_pattern, "<")(0)
+                        End If
+
+                        If Trim(errorPatterns) = "" Then
+                            Common.dataCheckSheet.Range(COL_DATA_CHECK_NO & addIndex).value = rowNum
+                            Common.dataCheckSheet.Range(COL_DATA_CHECK_FILE_NAME_PATTERN & addIndex).value = Split(name_pattern, "<")(0)
+                            Common.dataCheckSheet.Range(COL_DATA_CHECK_FILE_NAME & addIndex).value = fileOverView
+                            If flagRecordSize = "ëSåè" Then
+                                Common.dataCheckSheet.Range(COL_DATA_CHECK_MAX_QUANTITY_RECORD & addIndex).value = maxRecord
+                                Common.dataCheckSheet.Range(COL_DATA_CHECK_MAX_FILE_SIZE & addIndex).value = maxFileSize
+                            End If
+                            Common.dataCheckSheet.Range(COL_DATA_CHECK_SAVE & addIndex).value = i
+                        End If
                         addIndex = addIndex + 1
                     End If
                 ElseIf IsEmpty(name_pattern) Then
                     errorRows = errorRows & " " & rowNum
                 Else
-                    Common.dataCheckSheet.Range(COL_DATA_CHECK_NO & addIndex).value = rowNum
-                    Common.dataCheckSheet.Range(COL_DATA_CHECK_FILE_NAME_PATTERN & addIndex).value = Split(name_pattern, "<")(0)
-                    Common.dataCheckSheet.Range(COL_DATA_CHECK_FILE_NAME & addIndex).value = fileOverView
-                    If flagRecordSize = "ëSåè" Then
-                        Common.dataCheckSheet.Range(COL_DATA_CHECK_MAX_QUANTITY_RECORD & addIndex).value = maxRecord
-                        Common.dataCheckSheet.Range(COL_DATA_CHECK_MAX_FILE_SIZE & addIndex).value = maxFileSize
+                    arrayPattern = Split(stringPattern, ";")
+                    For J = 0 To UBound(arrayPattern)
+                        If arrayPattern(J) = Split(name_pattern, "<")(0) Then
+                            errorPatterns = errorPatterns & " " & arrayPattern(J) & ":" & rowNum
+                            flagDuplicateNamePattern = True
+                            'Exit Sub
+                        End If
+                    Next J
+                    If flagDuplicateNamePattern = False Then
+                        stringPattern = stringPattern & ";" & Split(name_pattern, "<")(0)
                     End If
-                    Common.dataCheckSheet.Range(COL_DATA_CHECK_SAVE & addIndex).value = i
+                    If Trim(errorPatterns) = "" Then
+                        Common.dataCheckSheet.Range(COL_DATA_CHECK_NO & addIndex).value = rowNum
+                        Common.dataCheckSheet.Range(COL_DATA_CHECK_FILE_NAME_PATTERN & addIndex).value = Split(name_pattern, "<")(0)
+                        Common.dataCheckSheet.Range(COL_DATA_CHECK_FILE_NAME & addIndex).value = fileOverView
+                        If flagRecordSize = "ëSåè" Then
+                            Common.dataCheckSheet.Range(COL_DATA_CHECK_MAX_QUANTITY_RECORD & addIndex).value = maxRecord
+                            Common.dataCheckSheet.Range(COL_DATA_CHECK_MAX_FILE_SIZE & addIndex).value = maxFileSize
+                        End If
+                        Common.dataCheckSheet.Range(COL_DATA_CHECK_SAVE & addIndex).value = i
+                    End If
                     addIndex = addIndex + 1
                 End If
             ElseIf (IsEmpty(fileOverView)) And checkRowEmpty(i) Then
                 errorRows = errorRows & " " & rowNum
             End If
         Next i
-        Validation.extractionEmptyFileSize (errorRows)
+        If IsEmpty(Trim(errorRows)) = False And Trim(errorRows) <> "" Then
+            Validation.extractionEmptyFileSize (errorRows)
+        Else
+            Validation.duplicateNamePattern (errorPatterns)
+        End If
     End If
 End Sub
 
@@ -525,7 +585,7 @@ Private Function checkRowEmpty(ByVal index As Integer)
     AK = Common.fileListSheet.Range("AK" & index).value
     AL = Common.fileListSheet.Range("AL" & index).value
     AM = Common.fileListSheet.Range("AM" & index).value
-    
+
     If IsEmpty(D) = False Or IsEmpty(E) = False Or IsEmpty(g) = False Or IsEmpty(H) = False Or IsEmpty(i) = False Or IsEmpty(J) = False Or IsEmpty(K) = False Or IsEmpty(L) = False Or IsEmpty(M) = False Or IsEmpty(n) = False Or IsEmpty(O) = False Or IsEmpty(P) = False Or IsEmpty(Q) = False Or IsEmpty(r) = False Or IsEmpty(s) = False Or IsEmpty(T) = False Or IsEmpty(U) = False Or IsEmpty(v) = False Then
         checkRowEmpty = True
         Exit Function
@@ -534,7 +594,7 @@ Private Function checkRowEmpty(ByVal index As Integer)
         Exit Function
     End If
     checkRowEmpty = False
-    
+
 End Function
 
 
@@ -544,30 +604,30 @@ End Function
 '@param strSeperatedChar   Seperated character
 '@param intNoOfCol             Defined number of column of file
 Function checkValidateSeperatedCharacter(ByVal fullFileName As String, ByVal strSeperatedChar As String, ByVal noOfCol As Integer, ByVal fileOverView As String, ByVal startRowData As Integer)
-    
+
     Dim intUnit As Integer
     Dim my_string As String
     Dim vntLines As Variant
-    
+
     intUnit = FreeFile
     Open fullFileName For Binary Access Read As #intUnit
     my_string = Input(LOF(intUnit), intUnit)
-    
+
     If InStr(my_string, vbCrLf) > 0 Then
         'Window file
         vntLines = Split(my_string, vbCrLf)
         vntLines = getProcessLine(vntLines, startRowData)
-        
+
     ElseIf InStr(my_string, vbCr) > 0 Then
         'MAC file
         vntLines = Split(my_string, vbCr)
         vntLines = getProcessLine(vntLines, startRowData)
-        
+
     Else
         'Unix file
         vntLines = Split(my_string, vbLf)
         vntLines = getProcessLine(vntLines, startRowData)
-        
+
     End If
     Close intUnit
     checkValidateSeperatedCharacter = True
@@ -590,54 +650,54 @@ Function readCSV(ByVal filePath As String, ByVal separater As String, ByVal limi
     Dim csvArray As Variant
     Dim errorTmp As String
     Dim lineIndex As Integer
-    
+
     ReDim csvArray(1 To limitLine) As Variant
     arrayIndex = 1
     lineIndex = 1
     IsValid = True
     csv = Null
     SetCSVUtilsAnyErrorIsFatal (True)
-    
+
     fileNo = FreeFile
-    
+
     Open filePath For Input As #fileNo
-    
+
     If columnCount = 1 Then
         parttern = "^\""([^\""]|\""\"")*\""$"
-                   
+
     ElseIf columnCount = 2 Then
         parttern = "^\""([^\""]|\""\"")*\""" & separater & "\""([^\""]|\""\"")*\""$"
     Else
         parttern = "^\""([^\""]|\""\"")*\""" & separater
-    
+
         For i = 1 To columnCount - 2
             parttern = parttern & "\""([^\""]|\""\"")*\""" & separater
         Next i
         parttern = parttern & "\""([^\""]|\""\"")*\""$"
     End If
-    
+
     Dim regEx As New RegExp
-    
+
     With regEx
         .Global = True
         .MultiLine = True
         .IgnoreCase = False
         .Pattern = parttern
     End With
-    
+
     Do While Not EOF(fileNo) And arrayIndex <= limitLine
-        
+
         Line Input #fileNo, textRow
-        
+
         If textData = "" Then
             textData = textRow
         Else
             textData = textData & textRow
         End If
-        
+
         'try parse CSV
         csv = ParseCSVToArray(textData, separater, fileOverView, arrayIndex)
-        
+
         'parse csv error
         If IsNull(csv) Or UBound(csv) = -1 Then
             errorTmp = arrayIndex
@@ -674,7 +734,7 @@ Function readCSV(ByVal filePath As String, ByVal separater As String, ByVal limi
         lineIndex = lineIndex + 1
     Loop
     Close #fileNo
-    
+
     'check has error
     If errorTmp <> "" Then
         If parseErrorRows.exists(errorTmp) = False Then
@@ -682,7 +742,7 @@ Function readCSV(ByVal filePath As String, ByVal separater As String, ByVal limi
         End If
         errorTmp = ""
     End If
-    
+
     'Log if has error
     If textData <> "" Or parseErrorRows.Count > 0 Then
         IsValid = False
@@ -691,7 +751,7 @@ Function readCSV(ByVal filePath As String, ByVal separater As String, ByVal limi
         Next
         Call updateStatusProcess(currentRowFile, STATUS_PROCESS_COMPLETED_NOK)
     End If
-    
+
     'trim result array
     If IsValid = True Then
         Dim csvTmp As Variant
@@ -713,7 +773,7 @@ Function readCSV(ByVal filePath As String, ByVal separater As String, ByVal limi
         readCSV = Null
         Call updateStatusProcess(currentRowFile, STATUS_PROCESS_COMPLETED_NOK)
     End If
-    
+
     'free memory
     Erase csvArray
     parseErrorRows.RemoveAll

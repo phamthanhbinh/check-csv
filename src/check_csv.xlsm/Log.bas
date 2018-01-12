@@ -27,4 +27,3 @@ End Sub
 Sub info(data As String)
     writeLog "INFO", data
 End Sub
-
