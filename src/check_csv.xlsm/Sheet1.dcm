@@ -1,0 +1,22 @@
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "Sheet1"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = True
+Function getLastRow() As Long
+    getLastRow = FindLast(1, Common.CheckingToolSheet)
+End Function
+Private Sub btnClear_Click()
+    lastRow = getLastRow()
+    If lastRow > 5 Then
+        Worksheets(Common.CheckingToolSheet).Range("C6:J" & lastRow).ClearContents
+    End If
+End Sub
+
+Private Sub chkAll_Click()
+    MsgBox ActiveSheet.CheckBoxes.Count
+End Sub
