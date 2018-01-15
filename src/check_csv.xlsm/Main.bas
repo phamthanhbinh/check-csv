@@ -320,7 +320,7 @@ Sub btnProcess_Click()
                         End If
                         rowNumCSV = rowNumCSV + 1
                     Next
-                    
+                    'huynnp
                     errorRowNumCSV = Replace(errorRowNumCSV, "、", "", 1, 1)
                     If IsEmpty(errorRowNumCSV) = False And Trim(errorRowNumCSV) <> "" Then
                         Log.ERROR (Replace(Replace(Replace(ERROR_COLUMN_PRIMARY_KEY, "%{fileName}", fileOverView), "%{row}", errorRowNumCSV), "%{column}", errorColumnName))
@@ -328,21 +328,34 @@ Sub btnProcess_Click()
                 Next pkey
 
                 rowNumCSV = 1
+                'huynnp
+                errorRowNumValidateDateCSV = ""
                 For Each csvRow In csvContent
                     'Check NOT NULL
+                    errorColumnNameNotNull = ""
                     For Each n In lstColumnNotNull
                         n = CInt(n)
                         If csvRow(1, n) = "" Then
                             isNormal = False
                             ColumnName = sheetOfDefiniteTable.Range(COL_DEFINITE_TABLE_NAME & DEFINITE_TABLE_FIRST_COL + n).value
-                            Log.ERROR (Replace(Replace(Replace(ERROR_COLUMN_NOT_NULL, "%{fileName}", fileOverView), "%{row}", rowNumCSV), "%{column}", ColumnName))
+                            'huynnp
+                            errorColumnNameNotNull = errorColumnNameNotNull & "、" & ColumnName
+                            'Log.ERROR (Replace(Replace(Replace(ERROR_COLUMN_NOT_NULL, "%{fileName}", fileOverView), "%{row}", rowNumCSV), "%{column}", ColumnName))
                         End If
                     Next n
+                    
+                    'huynnp
+                    errorColumnNameNotNull = Replace(errorColumnNameNotNull, "、", "", 1, 1)
+                    If IsEmpty(errorColumnNameNotNull) = False And Trim(errorColumnNameNotNull) <> "" Then
+                        Log.ERROR (Replace(Replace(Replace(ERROR_COLUMN_NOT_NULL, "%{fileName}", fileOverView), "%{row}", rowNumCSV), "%{column}", errorColumnNameNotNull))
+                    End If
+                    
                     ' 11 validate
                     Dim key As Variant
                     Dim FormatString As String
                     Dim OriginalValue As String
                     Dim FormattedValue As String
+
                     For Each key In dateColumns.Keys
                         FormatString = dateColumns(key)
                         OriginalValue = csvRow(1, key)
@@ -352,12 +365,17 @@ Sub btnProcess_Click()
                             FormattedValue = Format(OriginalValue, FormatString)
                             If FormattedValue <> OriginalValue Then
                                 isNormal = False
-                                Log.ERROR (Replace(Replace(Replace(ERROR_COLUMN_DATE_FORMAT, "%{fileName}", fileOverView), "%{row}", rowNumCSV), "%{column}", ColumnName))
+                                'huynnp
+                                errorRowNumValidateDateCSV = errorRowNumValidateDateCSV & "、" & rowNumCSV
+                                'Log.ERROR (Replace(Replace(Replace(ERROR_COLUMN_DATE_FORMAT, "%{fileName}", fileOverView), "%{row}", rowNumCSV), "%{column}", ColumnName))
                             End If
                         Else
                             isNormal = False
-                            Log.ERROR (Replace(Replace(Replace(ERROR_COLUMN_DATE_FORMAT, "%{fileName}", fileOverView), "%{row}", rowNumCSV), "%{column}", ColumnName))
+                            'huynnp
+                            errorRowNumValidateDateCSV = errorRowNumValidateDateCSV & "、" & rowNumCSV
+                            'Log.ERROR (Replace(Replace(Replace(ERROR_COLUMN_DATE_FORMAT, "%{fileName}", fileOverView), "%{row}", rowNumCSV), "%{column}", ColumnName))
                         End If
+                        
                     Next key
                     If rowNumCSV > 1000 Then
                         Call updateStatusProcess(rowNum, STATUS_PROCESS_COMPLETED_OK)
@@ -366,6 +384,13 @@ Sub btnProcess_Click()
                         rowNumCSV = rowNumCSV + 1
                     End If
                 Next csvRow
+                
+                'huynnp
+                errorRowNumValidateDateCSV = Replace(errorRowNumValidateDateCSV, "、", "", 1, 1)
+                If IsEmpty(errorRowNumValidateDateCSV) = False And Trim(errorRowNumValidateDateCSV) <> "" Then
+                    Log.ERROR (Replace(Replace(Replace(ERROR_COLUMN_DATE_FORMAT, "%{fileName}", fileOverView), "%{row}", errorRowNumValidateDateCSV), "%{column}", ColumnName))
+                End If
+                
                 '9 Validate maxRecord
                 fileRecordQuantity = getFileLine(filePath)
                 isNormal = isNormal And validateMaxRecord(fileRecordQuantity, maxRecordRule, fileOverView, flagRecordSize)
