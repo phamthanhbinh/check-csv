@@ -38,8 +38,8 @@ End Sub
 '                      and the error information is set to properties of Err object.
 '  True            --- Any run-time error that occurs is fatal (an error message is displayed and execution stops).
 '
-Public Sub SetCSVUtilsAnyErrorIsFatal(ByRef value As Boolean)
-  CSVUtilsAnyErrorIsFatal = value
+Public Sub SetCSVUtilsAnyErrorIsFatal(ByRef Value As Boolean)
+  CSVUtilsAnyErrorIsFatal = Value
 End Sub
 
 

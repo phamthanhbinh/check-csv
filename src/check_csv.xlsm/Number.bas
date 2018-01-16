@@ -20,3 +20,19 @@ Function roundDownAuto(a As Double) As Double
         End If
     Next
 End Function
+
+Public Function ULongToCurrency(ByVal Value As Long) As Currency
+    If Value < 0 Then
+        ULongToCurrency = CCur(Value And &H7FFFFFFF) + 2147483648#
+    Else
+        ULongToCurrency = CCur(Value)
+    End If
+End Function
+
+Public Function CurrencyToULong(ByVal Value As Currency) As Long
+    If Value >= 2147483648# Then
+        CurrencyToULong = &H80000000 Or CLng(Value - 2147483648#)
+    Else
+        CurrencyToULong = CLng(Value)
+    End If
+End Function

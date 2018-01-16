@@ -3,7 +3,7 @@ Attribute VB_Name = "Validation"
 Function allCheckboxNotChecked() As Boolean
 
     allCheckboxNotChecked = True
-    If ActiveSheet.CheckBoxes("chkAll").value <> 1 And ActiveSheet.CheckBoxes("chkAll").value <> 2 Then
+    If ActiveSheet.CheckBoxes("chkAll").Value <> 1 And ActiveSheet.CheckBoxes("chkAll").Value <> 2 Then
         allCheckboxNotChecked = False
         MsgBox ALL_CHECKBOX_NOT_CHECKED_MSG
     End If

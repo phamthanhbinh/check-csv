@@ -22,15 +22,15 @@ Function fileListSheet() As Worksheet
 End Function
 
 Function setRunning(rowNum As Long)
-    dataCheckSheet.Range("I" & rowNum).value = "Running"
+    dataCheckSheet.Range("I" & rowNum).Value = "Running"
 End Function
 
 Function setFinish(rowNum As Long)
-    dataCheckSheet.Range("I" & rowNum).value = "Finished"
+    dataCheckSheet.Range("I" & rowNum).Value = "Finished"
 End Function
 
 Function setCancel(rowNum As Long)
-    dataCheckSheet.Range("I" & rowNum).value = "Cancel"
+    dataCheckSheet.Range("I" & rowNum).Value = "Cancel"
 End Function
 
 Function definiteSheet(ByVal sheetName As String) As Worksheet

@@ -7,7 +7,7 @@ End Function
 
 'File size return number of KB
 Function size(ByVal path As String) As Double
-    size = Number.roundUp(FileLen(path) / 1024, 5)
+    size = Number.ULongToCurrency(FileLen(path))
 End Function
 
 Function newLineCharacter(ByVal path As String, vbVal As Integer)
@@ -16,7 +16,7 @@ Function newLineCharacter(ByVal path As String, vbVal As Integer)
     file = FreeFile
 
     Open path For Input As #file
-    buffer = Input(LOF(file), file)
+    buffer = Input(size(path), file)
     Close #file
 
     If InStr(1, buffer, vbCrLf) > 0 Then
@@ -48,7 +48,7 @@ Function csvToArray(ByVal emiFilePath As String, ByVal delimiter As String, ByVa
     Dim TextFile As Integer
     Dim filePath As String
     Dim FileContent As String
-    Dim LineArray() As String
+    Dim lineArray() As String
     Dim DataArray() As Variant
     'Inputs
     filePath = emiFilePath
@@ -58,18 +58,18 @@ Function csvToArray(ByVal emiFilePath As String, ByVal delimiter As String, ByVa
     Open filePath For Input As TextFile
 
     'Store file content inside a variable
-    FileContent = Input(LOF(TextFile), TextFile)
+    FileContent = Input(size(filePath), TextFile)
 
     'Close Text File
     Close TextFile
 
     'Separate Out lines of data
-    LineArray = Split(FileContent, newLineChar, -1, vbTextCompare)
-    ReDim DataArray(LBound(LineArray) To UBound(LineArray))
+    lineArray = Split(FileContent, newLineChar, -1, vbTextCompare)
+    ReDim DataArray(LBound(lineArray) To UBound(lineArray))
     Dim i As Long
     'Separate fields inside the lines
-    For i = LBound(LineArray) To UBound(LineArray)
-      DataArray(i) = Split(LineArray(i), delimiter, -1, vbTextCompare)
+    For i = LBound(lineArray) To UBound(lineArray)
+      DataArray(i) = Split(lineArray(i), delimiter, -1, vbTextCompare)
     Next i
     csvToArray = DataArray
 End Function
@@ -98,7 +98,7 @@ Function encoding(ByVal strFileName As String) As String
 
     Open strFileName For Binary Access Read As #intFileNumber
 
-    lngFileSize = LOF(intFileNumber)    'How large is the File in Bytes?
+    lngFileSize = size(strFileName)    'How large is the File in Bytes?
     If lngFileSize > 10000 Then
         lngFileSize = 10000
     End If
@@ -115,17 +115,17 @@ Function encoding(ByVal strFileName As String) As String
     For lngCharNumber = 1 To lngFileSize
       strCharacter = LCase(Mid(strBuffer, lngCharNumber, 1))
 
-      value = Hex$(Asc(strCharacter))
+      Value = Hex$(Asc(strCharacter))
       'Debug.Print "value: " & value
 
       'for 1 byte
-      If Len(value) = 2 Then
-        bytes(arrayIndex) = CByte("&H" & value)
+      If Len(Value) = 2 Then
+        bytes(arrayIndex) = CByte("&H" & Value)
         arrayIndex = arrayIndex + 1
       'for 2 bytes
-      ElseIf Len(value) = 4 Then
-        firstByte = Left$(value, 2)
-        lastByte = Right$(value, 2)
+      ElseIf Len(Value) = 4 Then
+        firstByte = Left$(Value, 2)
+        lastByte = Right$(Value, 2)
         bytes(arrayIndex) = CByte("&H" & firstByte)
         bytes(arrayIndex + 1) = CByte("&H" & lastByte)
         arrayIndex = arrayIndex + 1
@@ -180,3 +180,51 @@ Function getFileLine(ByVal filePath As String) As Long
     getFileLine = n
 
 End Function
+
+Function getRawContent(ByVal filePath As String, ByVal limitLine As Integer)
+    
+    Dim fileNo As Integer
+    Dim textRow As String
+    Dim lineIndex As Integer
+    Dim lineArray() As String
+    
+    getRawContent = Null
+    fileNo = FreeFile
+    lineIndex = 1
+    ReDim lineArray(1 To limitLine) As String
+    
+    Open filePath For Input As #fileNo
+    
+    Do While Not EOF(fileNo) And lineIndex <= limitLine
+        
+        Line Input #fileNo, textRow
+        
+        lineArray(lineIndex) = textRow
+        
+        lineIndex = lineIndex + 1
+    Loop
+    Close #fileNo
+    
+    If lineIndex <= limitLine Then
+    
+        Dim tmp() As String
+        ReDim tmp(1 To lineIndex) As String
+        
+        For i = 1 To lineIndex
+            tmp(i) = lineArray(i)
+        Next i
+        
+        If tmp(UBound(tmp)) = "" Then
+            ReDim Preserve tmp(1 To UBound(tmp) - 1)
+        End If
+        
+        getRawContent = tmp
+        
+        Erase tmp
+        Erase lineArray
+    Else
+        getRawContent = lineArray
+        Erase lineArray
+    End If
+End Function
+
